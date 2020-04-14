@@ -3,8 +3,13 @@ const logger = require('morgan')
 
 const app = express()
 
+const userRoute = require('./routes/user')
+
 // Middlewares
 app.use(logger('dev'))
+
+// Routes
+app.use('/users', userRoute)
 
 // Routes
 app.get('/', (req, res, next) => {
