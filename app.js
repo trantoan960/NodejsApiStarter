@@ -1,3 +1,4 @@
+const bodyParser = require('body-parser')
 const express = require('express')
 const logger = require('morgan')
 const mongoClient = require('mongoose')
@@ -16,6 +17,7 @@ const userRoute = require('./routes/user')
 
 // Middlewares
 app.use(logger('dev'))
+app.use(bodyParser.json())
 
 // Routes
 app.use('/users', userRoute)
