@@ -8,6 +8,32 @@
 const Deck = require('../models/Deck')
 const User = require('../models/User')
 
+const deleteDeck = async (req, res, next) => {
+    const { deckID } = req.value.params
+
+    // Get a deck
+    const deck = await Deck.findById(deckID)
+    const ownerID = deck.owner
+
+    // Get a owner
+    const owner = await User.findById(ownerID)
+
+    // Remove the deck
+    await deck.remove()
+
+    // Remove deck from owner's decks list
+    owner.decks.pull(deck)
+    await owner.save()
+
+    return res.status(200).json({ success: true })
+}
+
+const getDeck = async (req, res, next) => {
+    const deck = await Deck.findById(req.value.params.deckID)
+
+    return res.status(200).json({deck})
+}
+
 const index = async (req, res, next) => {
     const decks = await Deck.find({})
 
@@ -26,7 +52,6 @@ const newDeck = async (req, res, next) => {
     const newDeck = new Deck(deck)
     await newDeck.save()
 
-    console.log('owner ', owner)
     // Add newly created deck to the actual decks
     owner.decks.push(newDeck._id)
     await owner.save()
@@ -34,7 +59,27 @@ const newDeck = async (req, res, next) => {
     return res.status(201).json({deck: newDeck})
 }
 
+const replaceDeck = async (req, res, next) => {
+    const { deckID } = req.value.params
+    const newDeck = req.value.body
+    const result = await Deck.findByIdAndUpdate(deckID, newDeck)
+    // Check if put user, remove deck in user's model
+    return res.status(200).json({ success: true })
+}
+
+const updateDeck = async (req, res, next) => {
+    const { deckID } = req.value.params
+    const newDeck = req.value.body
+    const result = await Deck.findByIdAndUpdate(deckID, newDeck)
+    // Check if put user, remove deck in user's model
+    return res.status(200).json({ success: true })
+}
+
 module.exports = {
-   index,
-   newDeck
+    deleteDeck,
+    getDeck,
+    index,
+    newDeck,
+    replaceDeck,
+    updateDeck
 }
