@@ -8,16 +8,8 @@
  const Deck = require('../models/Deck')
  const User = require('../models/User')
 
- const Joi = require('@hapi/joi')
- const idSchema = Joi.object().keys({
-     userID: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required()
- })
-
  const getUser = async (req, res, next) => {
-    const validatorResult = idSchema.validate(req.params) 
-    console.log('validator result ', validatorResult)
-
-    const { userID } = req.params
+    const { userID } = req.value.params
 
     const user = await User.findById(userID)
 
