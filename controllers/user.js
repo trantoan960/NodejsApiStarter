@@ -2,17 +2,35 @@
  * We can interact with mongoose in three diffirent ways:
  * [v] Callback
  * [v] Promises
- * [x] Async/await (Promises)
+ * [v] Async/await (Promises)
  */
 
+ const Deck = require('../models/Deck')
  const User = require('../models/User')
 
+ const Joi = require('@hapi/joi')
+ const idSchema = Joi.object().keys({
+     userID: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required()
+ })
+
  const getUser = async (req, res, next) => {
+    const validatorResult = idSchema.validate(req.params) 
+    console.log('validator result ', validatorResult)
+
     const { userID } = req.params
 
     const user = await User.findById(userID)
 
     return res.status(200).json({user})
+ }
+
+ const getUserDecks = async (req, res, next) => {
+    const { userID } = req.params
+
+    // Get user
+    const user = await User.findById(userID).populate('decks')
+
+    return res.status(200).json({decks: user.decks})
  }
 
 const index = async (req, res, next) => {
@@ -27,6 +45,30 @@ const newUser = async (req, res, next) => {
     await newUser.save()
 
     return res.status(201).json({user: newUser})
+}
+
+const newUserDeck = async (req, res, next) => {
+    const { userID } = req.params
+
+    // Create a new deck
+    const newDeck = new Deck(req.body)
+
+    // Get user
+    const user = await User.findById(userID)
+
+    // Assign user as a deck's owner
+    newDeck.owner = user
+
+    // Save the deck
+    await newDeck.save()
+
+    // Add deck to user's decks array 'decks'
+    user.decks.push(newDeck._id)
+
+    // Save the user
+    await user.save()
+
+    res.status(201).json({deck: newDeck})
 }
 
 const replaceUser = async (req, res, next) => {
@@ -53,8 +95,10 @@ const updateUser = async (req, res, next) => {
 
 module.exports = {
     getUser,
+    getUserDecks,
     index,
     newUser,
+    newUserDeck,
     replaceUser,
     updateUser
 }
